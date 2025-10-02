@@ -1,6 +1,7 @@
 // here we are basically focusing on getting data from user side the credentials for resgistration
-import User from "../Models/user.model.js";
+import { User } from "../Models/user.model.js";
 import bcrypt from "bcryptjs";
+import { generateToken } from "../utils/generateToken.js";
 
 
 //This is bussiness logic for registration 
@@ -44,7 +45,7 @@ export const register = async (req, res) => {
 // This is for the login part
 export const login = async (req, res) => {
   try {
-    const (email, password) = req.body;
+    const { email, password } = req.body;
     if (!email || !password) {
       return res.status(400).json({
         success: false,
