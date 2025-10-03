@@ -59,7 +59,7 @@ const Login = () => {
 
 
   return (
-    <div className="flex items-center justify-center w-full">
+    <div className="flex items-center justify-center w-full mt-20">
       <Tabs className="w-[400px]" defaultValue="signup">
         <TabsList className="grid w-full grid-cols-2">
           <TabsTrigger value="signup">Signup</TabsTrigger>
