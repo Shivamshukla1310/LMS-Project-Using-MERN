@@ -8,6 +8,9 @@ import MainLayout from './layout/MainLayout'
 import Courses from './pages/student/Courses'
 import MyLearning from './pages/student/MyLearning'
 import Profile from './pages/student/Profile'
+import Sidebar from './pages/admin/Lectures/Sidebar'
+import Dashboard from './pages/admin/Lectures/Dashboard'
+import CourseTable from './pages/admin/course/CourseTable'
 
 const appRouter = createBrowserRouter([
   {
@@ -36,8 +39,26 @@ const appRouter = createBrowserRouter([
         path: "profile",
         element: <Profile />
 
+      },
+
+      // admin routes starts from here itself
+
+      {
+        path: "admin",
+        element: <Sidebar />,
+        children: [
+          {
+            path: "dashboard",
+            element: <Dashboard />
+          },
+          {
+            path: "courses",
+            element: <CourseTable />
+          }
+        ]
       }
-    ]
+    ],
+
   }
 ])
 
