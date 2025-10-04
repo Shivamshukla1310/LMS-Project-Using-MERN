@@ -42,10 +42,10 @@ const HeroSection = () => {
           <AnimatePresence mode="wait">
             <motion.div
               key={index}
-              initial={{ opacity: 0, y: 5 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -5 }}
-              transition={{ duration: 0.4 }}
+              initial={{ opacity: 0, y: 1 }}
+              animate={{ opacity: 2, y: 0 }}
+              exit={{ opacity: 0, y: -8 }}
+              transition={{ duration: 0.6 }}
               className="flex-grow"
             >
               <Input
@@ -61,8 +61,9 @@ const HeroSection = () => {
             Search
           </Button>
         </form>
+        <Button className="bg-white dark:bg-gray-800 text-rose-600 rounded-full hover:bg-pink-100">Explore Courses</Button>
       </div>
-    </div>
+    </div >
   )
 }
 

@@ -20,6 +20,7 @@ import {
 import { useEffect, useState } from "react"
 import { useLoginUserMutation, useRegisterUserMutation } from "features/apis/authApi"
 import { toast } from "sonner";
+import { useNavigate } from "react-router-dom"
 
 const Login = () => {
   const [signupInput, setSignupInput] = useState({ name: "", email: "", password: "" });
@@ -27,6 +28,8 @@ const Login = () => {
 
   const [registerUser, { data: registerData, error: registerError, isLoading: registerisLoading, isSuccess: registerisSuccess }] = useRegisterUserMutation();
   const [loginUser, { data: loginData, error: loginError, isLoading: loginisLoading, isSuccess: loginisSuccess }] = useLoginUserMutation();
+
+  const navigate = useNavigate(); // This varialbe is created to navigate different pages to its specific location
 
   const changeInputHandler = (e, type) => {
     const { name, value } = e.target;
@@ -51,6 +54,7 @@ const Login = () => {
     }
     if (loginData && loginisSuccess) {
       toast.success(loginData.message || "Login Successful");
+      navigate("/");
     }
     if (loginError) {
       toast.error(loginError?.data?.message || "Login Failed");
