@@ -46,10 +46,10 @@ const Navbar = () => {
                   <DropdownMenuLabel>My Account</DropdownMenuLabel>
                   <DropdownMenuGroup>
                     <DropdownMenuItem>
-                      My Learning
+                      <Link to="my-learning">My Learning</Link>
                     </DropdownMenuItem>
                     <DropdownMenuItem>
-                      Edit Profile
+                      <Link to="profile">Edit Profile</Link>
                     </DropdownMenuItem>
                     <DropdownMenuItem>
                       Logout
