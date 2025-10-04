@@ -1,13 +1,28 @@
 
-import { School } from 'lucide-react'
+import { Menu, School } from 'lucide-react'
 import React from 'react'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuGroup, DropdownMenuItem, DropdownMenuLabel, DropdownMenuTrigger } from './ui/dropdown-menu';
 import { Button } from './ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
 import DarkMode from '@/DarkMode';
+import {
+  Sheet,
+  SheetClose,
+  SheetContent,
+  SheetFooter,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "@/components/ui/sheet";
+import { Separator } from '@radix-ui/react-dropdown-menu';
+
+
+
+
 // Here We Are using Lucide React in this program
-const user = true;
+
 const Navbar = () => {
+  const user = true;
   return (
     <div className='h-16 dark:bg-[#0A0A0A] bg-white border b dark:border-b-gray-800 border-b-gray-200 fixed top-0 left-0 right-0 duration-300 z-10'>
       {/* For Desktop */}
@@ -54,7 +69,10 @@ const Navbar = () => {
         </div>
       </div>
       {/* For Mobile */}
-      <MobileNavbar />
+      <div className='flex md:hidden items-center justify-between px-4 h-full'>
+        <h1 className='font-extrabold text-2xl'>Moodle</h1>
+        <MobileNavbar />
+      </div>
     </div >
   )
 }
@@ -62,35 +80,34 @@ const Navbar = () => {
 export default Navbar
 
 const MobileNavbar = () => {
+  const role = "instructor";
   return (
     <Sheet>
       <SheetTrigger asChild>
-        <Button variant="outline">Open</Button>
+        <Button size='icon' className="rounded-full bg-gray-200 hover:bg-gray-300" variant="outline">
+          <Menu />
+        </Button>
       </SheetTrigger>
-      <SheetContent>
-        <SheetHeader>
-          <SheetTitle>Edit profile</SheetTitle>
-          <SheetDescription>
-            Make changes to your profile here. Click save when you&apos;re done.
-          </SheetDescription>
+      <SheetContent className="flex flex-col">
+        <SheetHeader className="flex flex-row items-center justify-between mt-7">
+          <SheetTitle>Moodle</SheetTitle>
+          <DarkMode />
         </SheetHeader>
-        <div className="grid flex-1 auto-rows-min gap-6 px-4">
-          <div className="grid gap-3">
-            <Label htmlFor="sheet-demo-name">Name</Label>
-            <Input id="sheet-demo-name" defaultValue="Pedro Duarte" />
-          </div>
-          <div className="grid gap-3">
-            <Label htmlFor="sheet-demo-username">Username</Label>
-            <Input id="sheet-demo-username" defaultValue="@peduarte" />
-          </div>
-        </div>
-        <SheetFooter>
-          <Button type="submit">Save changes</Button>
-          <SheetClose asChild>
-            <Button variant="outline">Close</Button>
-          </SheetClose>
-        </SheetFooter>
+        <Separator className="mr-2" />
+        <nav className='flex flex-col px-4 space-y-4'>
+          <span>My Learning</span>
+          <span>Edit Profile</span>
+          <p>Logout</p>
+          {role === "instructor" && (
+            <SheetFooter>
+              <SheetClose asChild>
+                <Button type="submit">Dashboard</Button>
+              </SheetClose>
+            </SheetFooter>
+          )
+          }
+        </nav>
       </SheetContent>
     </Sheet>
-  )
-}
+  );
+};
