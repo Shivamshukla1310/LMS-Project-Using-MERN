@@ -1,8 +1,11 @@
 import Stripe from "stripe";
-import { Course } from "../models/course.model.js";
-import { CoursePurchase } from "../Models/coursePurchase.model.js";
-import { Lecture } from "../Models/lecture.model.js";
-import { User } from "../models/user.model.js";
+import Course from "../models/course.model.js";
+import CoursePurchase from "../models/coursePurchase.model.js";
+import Lecture from "../Models/lecture.model.js";
+import User from "../Models/user.model.js";
+import dotenv from "dotenv"; // ✅ Add dotenv here
+
+dotenv.config(); // ✅ Load .env variables
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 

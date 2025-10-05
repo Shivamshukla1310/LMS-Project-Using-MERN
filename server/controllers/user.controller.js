@@ -1,5 +1,5 @@
 // here we are basically focusing on getting data from user side the credentials for resgistration
-import { User } from "../Models/user.model.js";
+import User from "../Models/user.model.js";
 import bcrypt from "bcryptjs";
 import { generateToken } from "../utils/generateToken.js";
 
