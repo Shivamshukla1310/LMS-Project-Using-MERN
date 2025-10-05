@@ -18,11 +18,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import {
-  useEditCourseMutation,
-  useGetCourseByIdQuery,
-  usePublishCourseMutation,
-} from "@/features/api/courseApi";
+import { useEditCourseMutation, usePublishCourseMutation, useGetCourseByIdQuery } from "features/apis/courseApi";
 import { Loader2 } from "lucide-react";
 import React, { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";

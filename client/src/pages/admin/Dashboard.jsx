@@ -1,11 +1,11 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { useGetPurchasedCoursesQuery } from "@/features/api/purchaseApi";
+import { useGetPurchasedCoursesQuery } from "features/apis/purchaseApi";
 import React from "react";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 
 const Dashboard = () => {
 
-  const { data, isSuccess, isError, isLoading } = useGetPurchasedCoursesQuery();
+  const { data, isError, isLoading } = useGetPurchasedCoursesQuery();
 
   if (isLoading) return <h1>Loading...</h1>
   if (isError) return <h1 className="text-red-500">Failed to get purchased course</h1>

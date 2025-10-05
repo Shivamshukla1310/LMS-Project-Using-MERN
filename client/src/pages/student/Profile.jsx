@@ -14,10 +14,7 @@ import { Label } from "@/components/ui/label";
 import { Loader2 } from "lucide-react";
 import React, { useEffect, useState } from "react";
 import Course from "./Course";
-import {
-  useLoadUserQuery,
-  useUpdateUserMutation,
-} from "@/features/api/authApi";
+import { useLoadUserQuery, useUpdateUserMutation } from "features/apis/authApi";
 import { toast } from "sonner";
 
 const Profile = () => {
