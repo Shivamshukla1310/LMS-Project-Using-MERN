@@ -81,7 +81,7 @@ const Login = () => {
     // ✅ Login flow
     if (loginIsSuccess && loginData) {
       toast.success(loginData.message || "Login successful!");
-      navigate("/");
+      navigate("/profile");
     }
     if (loginError) {
       toast.error(loginError?.data?.message || "Login failed.");

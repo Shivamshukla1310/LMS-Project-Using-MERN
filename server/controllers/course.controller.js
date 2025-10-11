@@ -2,6 +2,7 @@ import Course from "../models/course.model.js";
 import Lecture from "../Models/lecture.model.js";
 import { deleteMediaFromCloudinary, deleteVideoFromCloudinary, uploadMedia } from "../utils/cloudinary.js";
 
+
 export const createCourse = async (req, res) => {
   try {
     const { courseTitle, category } = req.body;
@@ -131,7 +132,20 @@ export const editCourse = async (req, res) => {
     }
 
 
-    const updateData = { courseTitle, subTitle, description, category, courseLevel, coursePrice, courseThumbnail: courseThumbnail?.secure_url };
+    const updateData = {
+      courseTitle,
+      subTitle,
+      description,
+      category,
+      courseLevel,
+      courseThumbnail: courseThumbnail?.secure_url
+    };
+
+    // Only add coursePrice if it’s defined
+    if (coursePrice !== undefined && coursePrice !== "") {
+      updateData.coursePrice = Number(coursePrice);
+    }
+
 
     course = await Course.findByIdAndUpdate(courseId, updateData, { new: true });
 

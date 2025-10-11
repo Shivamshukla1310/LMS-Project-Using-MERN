@@ -19,21 +19,16 @@ import { toast } from "sonner";
 
 const Profile = () => {
   const [name, setName] = useState("");
-  const [profilePhoto, setProfilePhoto] = useState("");
+  const [profilePhoto, setProfilePhoto] = useState(null);
 
   const { data, isLoading, refetch } = useLoadUserQuery();
   const [
     updateUser,
-    {
-      data: updateUserData,
-      isLoading: updateUserIsLoading,
-      isError,
-      error,
-      isSuccess,
-    },
+    { data: updateUserData, isLoading: updateUserIsLoading, isError, error, isSuccess },
   ] = useUpdateUserMutation();
 
-  console.log(data);
+  const user = data?.user;
+  if (!user) return <h1>No profile data found.</h1>;
 
   const onChangeHandler = (e) => {
     const file = e.target.files?.[0];
@@ -41,71 +36,68 @@ const Profile = () => {
   };
 
   const updateUserHandler = async () => {
+    if (!name && !profilePhoto) {
+      toast.error("Please provide a new name or profile photo.");
+      return;
+    }
     const formData = new FormData();
-    formData.append("name", name);
-    formData.append("profilePhoto", profilePhoto);
-    await updateUser(formData);
+    if (name) formData.append("name", name);
+    if (profilePhoto) formData.append("profilePhoto", profilePhoto);
+
+    try {
+      await updateUser(formData).unwrap();
+      toast.success("Profile updated successfully.");
+      refetch();
+    } catch (err) {
+      toast.error(err?.data?.message || "Failed to update profile");
+    }
   };
 
   useEffect(() => {
     refetch();
-  }, []);
+  }, [refetch]);
 
-  useEffect(() => {
-    if (isSuccess) {
-      refetch();
-      toast.success(data.message || "Profile updated.");
-    }
-    if (isError) {
-      toast.error(error.message || "Failed to update profile");
-    }
-  }, [error, updateUserData, isSuccess, isError]);
-
-  if (isLoading) return <h1>Profile Loading...</h1>;
-
-  const user = data && data.user;
-
-  console.log(user);
-
+  if (isLoading) return <h1>Loading profile...</h1>;
+  if (!user) return <h1>No profile data found.</h1>;
 
   return (
     <div className="max-w-4xl mx-auto px-4 my-10">
       <h1 className="font-bold text-2xl text-center md:text-left">PROFILE</h1>
+
       <div className="flex flex-col md:flex-row items-center md:items-start gap-8 my-5">
         <div className="flex flex-col items-center">
           <Avatar className="h-24 w-24 md:h-32 md:w-32 mb-4">
-            <AvatarImage
-              src={user?.photoUrl || "https://github.com/shadcn.png"}
-              alt="@shadcn"
-            />
+            <AvatarImage src={user.photoUrl || "https://github.com/shadcn.png"} alt={user.name || "User"} />
             <AvatarFallback>CN</AvatarFallback>
           </Avatar>
         </div>
+
         <div>
           <div className="mb-2">
-            <h1 className="font-semibold text-gray-900 dark:text-gray-100 ">
+            <h1 className="font-semibold text-gray-900 dark:text-gray-100">
               Name:
               <span className="font-normal text-gray-700 dark:text-gray-300 ml-2">
-                {user.name}
+                {user.name || "N/A"}
               </span>
             </h1>
           </div>
           <div className="mb-2">
-            <h1 className="font-semibold text-gray-900 dark:text-gray-100 ">
+            <h1 className="font-semibold text-gray-900 dark:text-gray-100">
               Email:
               <span className="font-normal text-gray-700 dark:text-gray-300 ml-2">
-                {user.email}
+                {user.email || "N/A"}
               </span>
             </h1>
           </div>
           <div className="mb-2">
-            <h1 className="font-semibold text-gray-900 dark:text-gray-100 ">
+            <h1 className="font-semibold text-gray-900 dark:text-gray-100">
               Role:
               <span className="font-normal text-gray-700 dark:text-gray-300 ml-2">
-                {user.role.toUpperCase()}
+                {user.role ? user.role.toUpperCase() : "N/A"}
               </span>
             </h1>
           </div>
+
           <Dialog>
             <DialogTrigger asChild>
               <Button size="sm" className="mt-2">
@@ -116,10 +108,10 @@ const Profile = () => {
               <DialogHeader>
                 <DialogTitle>Edit Profile</DialogTitle>
                 <DialogDescription>
-                  Make changes to your profile here. Click save when you're
-                  done.
+                  Make changes to your profile here. Click save when you're done.
                 </DialogDescription>
               </DialogHeader>
+
               <div className="grid gap-4 py-4">
                 <div className="grid grid-cols-4 items-center gap-4">
                   <Label>Name</Label>
@@ -127,7 +119,7 @@ const Profile = () => {
                     type="text"
                     value={name}
                     onChange={(e) => setName(e.target.value)}
-                    placeholder="Name"
+                    placeholder={user.name || "Name"}
                     className="col-span-3"
                   />
                 </div>
@@ -141,15 +133,12 @@ const Profile = () => {
                   />
                 </div>
               </div>
+
               <DialogFooter>
-                <Button
-                  disabled={updateUserIsLoading}
-                  onClick={updateUserHandler}
-                >
+                <Button disabled={updateUserIsLoading} onClick={updateUserHandler}>
                   {updateUserIsLoading ? (
                     <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Please
-                      wait
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Please wait
                     </>
                   ) : (
                     "Save Changes"
@@ -160,15 +149,14 @@ const Profile = () => {
           </Dialog>
         </div>
       </div>
+
       <div>
         <h1 className="font-medium text-lg">Courses you're enrolled in</h1>
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 my-5">
-          {user.enrolledCourses.length === 0 ? (
+          {user.enrolledCourses?.length === 0 ? (
             <h1>You haven't enrolled yet</h1>
           ) : (
-            user.enrolledCourses.map((course) => (
-              <Course course={course} key={course._id} />
-            ))
+            user.enrolledCourses?.map((course) => <Course course={course} key={course._id} />)
           )}
         </div>
       </div>

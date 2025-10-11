@@ -11,4 +11,8 @@ export default defineConfig({
       "features": path.resolve(__dirname, "./features"), // features outside src
     },
   },
+  server: {
+    port: 5173,
+    host: true,
+  },
 });
