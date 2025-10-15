@@ -24,11 +24,14 @@ const Profile = () => {
   const { data, isLoading, refetch } = useLoadUserQuery();
   const [
     updateUser,
-    { data: updateUserData, isLoading: updateUserIsLoading, isError, error, isSuccess },
+    { isLoading: updateUserIsLoading },
   ] = useUpdateUserMutation();
 
   const user = data?.user;
-  if (!user) return <h1>No profile data found.</h1>;
+
+  useEffect(() => {
+    refetch();
+  }, [refetch]);
 
   const onChangeHandler = (e) => {
     const file = e.target.files?.[0];
@@ -40,6 +43,7 @@ const Profile = () => {
       toast.error("Please provide a new name or profile photo.");
       return;
     }
+
     const formData = new FormData();
     if (name) formData.append("name", name);
     if (profilePhoto) formData.append("profilePhoto", profilePhoto);
@@ -53,54 +57,54 @@ const Profile = () => {
     }
   };
 
-  useEffect(() => {
-    refetch();
-  }, [refetch]);
-
-  if (isLoading) return <h1>Loading profile...</h1>;
-  if (!user) return <h1>No profile data found.</h1>;
+  if (isLoading) return <h1 className="text-center mt-10">Loading profile...</h1>;
+  if (!user) return <h1 className="text-center mt-10">No profile data found.</h1>;
 
   return (
-    <div className="max-w-4xl mx-auto px-4 my-10">
-      <h1 className="font-bold text-2xl text-center md:text-left">PROFILE</h1>
+    <div className="max-w-6xl mx-auto px-4 md:px-6 my-18">
+      {/* Profile Header */}
+      <h1 className="font-extrabold text-3xl text-center md:text-left mb-10">
+        My Profile
+      </h1>
 
-      <div className="flex flex-col md:flex-row items-center md:items-start gap-8 my-5">
+      {/* Profile Section */}
+      <div className="flex flex-col md:flex-row items-center md:items-start gap-10 mb-12">
+        {/* Avatar */}
         <div className="flex flex-col items-center">
-          <Avatar className="h-24 w-24 md:h-32 md:w-32 mb-4">
-            <AvatarImage src={user.photoUrl || "https://github.com/shadcn.png"} alt={user.name || "User"} />
+          <Avatar className="h-28 w-28 md:h-36 md:w-36 mb-4 ring-4 ring-primary/10">
+            <AvatarImage
+              src={user.photoUrl || "https://github.com/shadcn.png"}
+              alt={user.name || "User"}
+            />
             <AvatarFallback>CN</AvatarFallback>
           </Avatar>
         </div>
 
-        <div>
-          <div className="mb-2">
-            <h1 className="font-semibold text-gray-900 dark:text-gray-100">
-              Name:
-              <span className="font-normal text-gray-700 dark:text-gray-300 ml-2">
-                {user.name || "N/A"}
-              </span>
-            </h1>
-          </div>
-          <div className="mb-2">
-            <h1 className="font-semibold text-gray-900 dark:text-gray-100">
-              Email:
-              <span className="font-normal text-gray-700 dark:text-gray-300 ml-2">
-                {user.email || "N/A"}
-              </span>
-            </h1>
-          </div>
-          <div className="mb-2">
-            <h1 className="font-semibold text-gray-900 dark:text-gray-100">
-              Role:
-              <span className="font-normal text-gray-700 dark:text-gray-300 ml-2">
-                {user.role ? user.role.toUpperCase() : "N/A"}
-              </span>
-            </h1>
-          </div>
+        {/* Details */}
+        <div className="space-y-3">
+          <p className="text-gray-900 dark:text-gray-100 font-semibold">
+            Name:{" "}
+            <span className="font-normal text-gray-700 dark:text-gray-300">
+              {user.name || "N/A"}
+            </span>
+          </p>
+          <p className="text-gray-900 dark:text-gray-100 font-semibold">
+            Email:{" "}
+            <span className="font-normal text-gray-700 dark:text-gray-300">
+              {user.email || "N/A"}
+            </span>
+          </p>
+          <p className="text-gray-900 dark:text-gray-100 font-semibold">
+            Role:{" "}
+            <span className="font-normal text-gray-700 dark:text-gray-300">
+              {user.role ? user.role.toUpperCase() : "N/A"}
+            </span>
+          </p>
 
+          {/* Edit Dialog */}
           <Dialog>
             <DialogTrigger asChild>
-              <Button size="sm" className="mt-2">
+              <Button size="sm" className="mt-4">
                 Edit Profile
               </Button>
             </DialogTrigger>
@@ -108,7 +112,7 @@ const Profile = () => {
               <DialogHeader>
                 <DialogTitle>Edit Profile</DialogTitle>
                 <DialogDescription>
-                  Make changes to your profile here. Click save when you're done.
+                  Update your profile details below.
                 </DialogDescription>
               </DialogHeader>
 
@@ -135,10 +139,14 @@ const Profile = () => {
               </div>
 
               <DialogFooter>
-                <Button disabled={updateUserIsLoading} onClick={updateUserHandler}>
+                <Button
+                  disabled={updateUserIsLoading}
+                  onClick={updateUserHandler}
+                >
                   {updateUserIsLoading ? (
                     <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Please wait
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Please
+                      wait
                     </>
                   ) : (
                     "Save Changes"
@@ -150,15 +158,25 @@ const Profile = () => {
         </div>
       </div>
 
+      {/* Enrolled Courses Section */}
       <div>
-        <h1 className="font-medium text-lg">Courses you're enrolled in</h1>
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 my-5">
-          {user.enrolledCourses?.length === 0 ? (
-            <h1>You haven't enrolled yet</h1>
-          ) : (
-            user.enrolledCourses?.map((course) => <Course course={course} key={course._id} />)
-          )}
-        </div>
+        <h2 className="font-semibold text-2xl mb-6 text-center md:text-left">
+          Courses You're Enrolled In
+        </h2>
+
+        {user.enrolledCourses?.length === 0 ? (
+          <p className="text-gray-500 dark:text-gray-400 text-center">
+            You haven’t enrolled in any courses yet.
+          </p>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8 place-items-center">
+            {user.enrolledCourses.map((course) => (
+              <div key={course._id} className="w-full flex justify-center">
+                <Course course={course} />
+              </div>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );
