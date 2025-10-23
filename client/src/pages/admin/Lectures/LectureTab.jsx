@@ -10,7 +10,11 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Progress } from "@/components/ui/progress";
 import { Switch } from "@/components/ui/switch";
-import { useEditLectureMutation, useGetLectureByIdQuery, useRemoveLectureMutation } from "features/apis/courseApi";
+import {
+  useEditLectureMutation,
+  useGetLectureByIdQuery,
+  useRemoveLectureMutation,
+} from "features/apis/courseApi";
 import axios from "axios";
 import { Loader2 } from "lucide-react";
 import React, { useEffect, useState } from "react";
@@ -36,13 +40,16 @@ const LectureTab = () => {
     if (lecture) {
       setLectureTitle(lecture.lectureTitle);
       setIsFree(lecture.isPreviewFree);
-      setUploadVideoInfo(lecture.videoInfo)
+      setUploadVideoInfo(lecture.videoInfo);
     }
-  }, [lecture])
+  }, [lecture]);
 
   const [edtiLecture, { data, isLoading, error, isSuccess }] =
     useEditLectureMutation();
-  const [removeLecture, { data: removeData, isLoading: removeLoading, isSuccess: removeSuccess }] = useRemoveLectureMutation();
+  const [
+    removeLecture,
+    { data: removeData, isLoading: removeLoading, isSuccess: removeSuccess },
+  ] = useRemoveLectureMutation();
 
   const fileChangeHandler = async (e) => {
     const file = e.target.files[0];
@@ -58,7 +65,6 @@ const LectureTab = () => {
         });
 
         if (res.data.success) {
-          console.log(res);
           setUploadVideoInfo({
             videoUrl: res.data.data.url,
             publicId: res.data.data.public_id,
@@ -67,8 +73,7 @@ const LectureTab = () => {
           toast.success(res.data.message);
         }
       } catch (error) {
-        console.log(error);
-        toast.error("video upload failed");
+        toast.error("Video upload failed");
       } finally {
         setMediaProgress(false);
       }
@@ -76,8 +81,6 @@ const LectureTab = () => {
   };
 
   const editLectureHandler = async () => {
-    console.log({ lectureTitle, uploadVideInfo, isFree, courseId, lectureId });
-
     await edtiLecture({
       lectureTitle,
       videoInfo: uploadVideInfo,
@@ -89,86 +92,111 @@ const LectureTab = () => {
 
   const removeLectureHandler = async () => {
     await removeLecture(lectureId);
-  }
+  };
 
   useEffect(() => {
-    if (isSuccess) {
-      toast.success(data.message);
-    }
-    if (error) {
-      toast.error(error.data.message);
-    }
+    if (isSuccess) toast.success(data.message);
+    if (error) toast.error(error.data.message);
   }, [isSuccess, error]);
 
   useEffect(() => {
-    if (removeSuccess) {
-      toast.success(removeData.message);
-    }
-  }, [removeSuccess])
+    if (removeSuccess) toast.success(removeData.message);
+  }, [removeSuccess]);
 
   return (
-    <Card>
-      <CardHeader className="flex justify-between">
+    <Card className="shadow-md border border-gray-200 rounded-2xl transition-all duration-300 hover:shadow-lg">
+      <CardHeader className="flex items-center justify-between border-b border-gray-100 pb-4">
         <div>
-          <CardTitle>Edit Lecture</CardTitle>
-          <CardDescription>
-            Make changes and click save when done.
+          <CardTitle className="text-xl font-semibold text-gray-900">
+            Edit Lecture
+          </CardTitle>
+          <CardDescription className="text-sm text-gray-500">
+            Make changes and click <span className="font-medium">Update Lecture</span> when done.
           </CardDescription>
         </div>
-        <div className="flex items-center gap-2">
-          <Button disbaled={removeLoading} variant="destructive" onClick={removeLectureHandler}>
-            {
-              removeLoading ? <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Please wait
-              </> : "Remove Lecture"
-            }
-          </Button>
-        </div>
+        <Button
+          disabled={removeLoading}
+          variant="destructive"
+          onClick={removeLectureHandler}
+          className="text-white font-medium"
+        >
+          {removeLoading ? (
+            <>
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              Please wait
+            </>
+          ) : (
+            "Remove Lecture"
+          )}
+        </Button>
       </CardHeader>
-      <CardContent>
-        <div>
-          <Label>Title</Label>
+
+      <CardContent className="space-y-6 mt-4">
+        {/* Lecture Title */}
+        <div className="space-y-2">
+          <Label className="text-gray-700 font-medium">Lecture Title</Label>
           <Input
             value={lectureTitle}
             onChange={(e) => setLectureTitle(e.target.value)}
             type="text"
             placeholder="Ex. Introduction to Javascript"
+            className="focus:ring-2 focus:ring-blue-500 transition-all duration-200"
           />
         </div>
-        <div className="my-5">
-          <Label>
+
+        {/* Video Upload */}
+        <div className="space-y-2">
+          <Label className="text-gray-700 font-medium">
             Video <span className="text-red-500">*</span>
           </Label>
           <Input
             type="file"
             accept="video/*"
             onChange={fileChangeHandler}
-            placeholder="Ex. Introduction to Javascript"
-            className="w-fit"
+            className="cursor-pointer w-fit border border-gray-300 rounded-md bg-gray-50 hover:bg-gray-100 transition"
           />
-        </div>
-        <div className="flex items-center space-x-2 my-5">
-          <Switch checked={isFree} onCheckedChange={setIsFree} id="airplane-mode" />
-          <Label htmlFor="airplane-mode">Is this video FREE</Label>
+          {uploadVideInfo?.videoUrl && (
+            <video
+              src={uploadVideInfo.videoUrl}
+              controls
+              className="rounded-lg border mt-2 w-full max-h-64 shadow-sm"
+            />
+          )}
         </div>
 
+        {/* Free Preview Switch */}
+        <div className="flex items-center gap-3 my-5">
+          <Switch checked={isFree} onCheckedChange={setIsFree} id="free-video" />
+          <Label htmlFor="free-video" className="text-gray-700 font-medium">
+            Make this video free to preview
+          </Label>
+        </div>
+
+        {/* Upload Progress */}
         {mediaProgress && (
-          <div className="my-4">
+          <div className="space-y-2 my-4">
             <Progress value={uploadProgress} />
-            <p>{uploadProgress}% uploaded</p>
+            <p className="text-sm text-gray-500 font-medium text-center">
+              Uploading... {uploadProgress}%
+            </p>
           </div>
         )}
 
-        <div className="mt-4">
-          <Button disabled={isLoading} onClick={editLectureHandler}>
-            {
-              isLoading ? <>
+        {/* Save Button */}
+        <div className="flex justify-end mt-8">
+          <Button
+            disabled={isLoading}
+            onClick={editLectureHandler}
+            className="px-6 py-2 font-semibold"
+          >
+            {isLoading ? (
+              <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                 Please wait
-              </> : "Update Lecture"
-            }
-
+              </>
+            ) : (
+              "Update Lecture"
+            )}
           </Button>
         </div>
       </CardContent>

@@ -30,42 +30,59 @@ const AddCourse = () => {
   };
 
   const createCourseHandler = async () => {
-    await createCourse({ courseTitle, category });
+    if (!courseTitle || !category) {
+      toast.error("Please provide both course title and category");
+      return;
+    }
+    try {
+      await createCourse({ courseTitle, category });
+    } catch (err) {
+      toast.error(err?.data?.message || "Failed to create course");
+    }
   };
 
-  // for displaying toast
+  // Display toast on success
   useEffect(() => {
     if (isSuccess) {
-      toast.success(data?.message || "Course created.");
+      toast.success(data?.message || "Course created successfully!");
       navigate("/admin/course");
     }
-  }, [isSuccess, error])
+    if (error) {
+      toast.error(error?.data?.message || "Something went wrong");
+    }
+  }, [isSuccess, error, data, navigate]);
 
   return (
-    <div className="flex-1 mx-10">
-      <div className="mb-4">
-        <h1 className="font-bold text-xl">
-          Lets add course, add some basic course details for your new course
+    <div className="max-w-3xl mx-auto mt-10 p-6 bg-white dark:bg-[#1e1e1e] rounded-xl shadow-lg">
+      {/* Header */}
+      <div className="mb-6">
+        <h1 className="text-2xl font-bold mb-2 text-gray-900 dark:text-gray-100">
+          Add New Course
         </h1>
-        <p className="text-sm">
-          Lorem, ipsum dolor sit amet consectetur adipisicing elit. Possimus,
-          laborum!
+        <p className="text-gray-600 dark:text-gray-300 text-sm">
+          Fill in the basic course details to create a new course.
         </p>
       </div>
-      <div className="space-y-4">
-        <div>
-          <Label>Title</Label>
+
+      {/* Form */}
+      <div className="space-y-5">
+        {/* Course Title */}
+        <div className="flex flex-col">
+          <Label className="mb-1">Course Title</Label>
           <Input
             type="text"
             value={courseTitle}
             onChange={(e) => setCourseTitle(e.target.value)}
-            placeholder="Your Course Name"
+            placeholder="Enter course name"
+            className="rounded-md border-gray-300 dark:border-gray-700 focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400"
           />
         </div>
-        <div>
-          <Label>Category</Label>
+
+        {/* Category */}
+        <div className="flex flex-col">
+          <Label className="mb-1">Category</Label>
           <Select onValueChange={getSelectedCategory}>
-            <SelectTrigger className="w-[180px]">
+            <SelectTrigger className="w-full sm:w-[250px] rounded-md border-gray-300 dark:border-gray-700 focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400">
               <SelectValue placeholder="Select a category" />
             </SelectTrigger>
             <SelectContent>
@@ -91,18 +108,28 @@ const AddCourse = () => {
             </SelectContent>
           </Select>
         </div>
-        <div className="flex items-center gap-2">
-          <Button variant="outline" onClick={() => navigate("/admin/course")}>
+
+        {/* Buttons */}
+        <div className="flex flex-col sm:flex-row items-center gap-4">
+          <Button
+            variant="outline"
+            onClick={() => navigate("/admin/course")}
+            className="w-full sm:w-auto"
+          >
             Back
           </Button>
-          <Button disabled={isLoading} onClick={createCourseHandler}>
+          <Button
+            disabled={isLoading}
+            onClick={createCourseHandler}
+            className="w-full sm:w-auto flex items-center justify-center gap-2"
+          >
             {isLoading ? (
               <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Please wait
+                <Loader2 className="animate-spin h-4 w-4" />
+                Creating...
               </>
             ) : (
-              "Create"
+              "Create Course"
             )}
           </Button>
         </div>

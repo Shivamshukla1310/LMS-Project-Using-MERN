@@ -5,94 +5,98 @@ import {
   TableBody,
   TableCaption,
   TableCell,
-  TableFooter,
   TableHead,
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
 import { useGetCreatorCourseQuery } from "features/apis/courseApi";
-import { Edit } from "lucide-react";
+import { Edit, PlusCircle, Loader2 } from "lucide-react";
 import React from "react";
 import { useNavigate } from "react-router-dom";
-
-const invoices = [
-  {
-    invoice: "INV001",
-    paymentStatus: "Paid",
-    totalAmount: "$250.00",
-    paymentMethod: "Credit Card",
-  },
-  {
-    invoice: "INV002",
-    paymentStatus: "Pending",
-    totalAmount: "$150.00",
-    paymentMethod: "PayPal",
-  },
-  {
-    invoice: "INV003",
-    paymentStatus: "Unpaid",
-    totalAmount: "$350.00",
-    paymentMethod: "Bank Transfer",
-  },
-  {
-    invoice: "INV004",
-    paymentStatus: "Paid",
-    totalAmount: "$450.00",
-    paymentMethod: "Credit Card",
-  },
-  {
-    invoice: "INV005",
-    paymentStatus: "Paid",
-    totalAmount: "$550.00",
-    paymentMethod: "PayPal",
-  },
-  {
-    invoice: "INV006",
-    paymentStatus: "Pending",
-    totalAmount: "$200.00",
-    paymentMethod: "Bank Transfer",
-  },
-  {
-    invoice: "INV007",
-    paymentStatus: "Unpaid",
-    totalAmount: "$300.00",
-    paymentMethod: "Credit Card",
-  },
-];
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 const CourseTable = () => {
-  const { data, isLoading } = useGetCreatorCourseQuery();
+  const { data, isLoading, isError } = useGetCreatorCourseQuery();
   const navigate = useNavigate();
 
-  if (isLoading) return <h1>Loading...</h1>
+  if (isLoading) {
+    return (
+      <div className="flex justify-center items-center h-40">
+        <Loader2 className="animate-spin h-6 w-6 text-blue-500" />
+        <span className="ml-2 text-sm text-gray-500">Loading your courses...</span>
+      </div>
+    );
+  }
+
+  if (isError) {
+    return <p className="text-center text-red-500">Failed to load courses. Please try again later.</p>;
+  }
+
+  const courses = data?.courses || [];
 
   return (
-    <div>
-      <Button onClick={() => navigate(`create`)}>Create a new course</Button>
-      <Table>
-        <TableCaption>A list of your recent courses.</TableCaption>
-        <TableHeader>
-          <TableRow>
-            <TableHead className="w-[100px]">Price</TableHead>
-            <TableHead>Status</TableHead>
-            <TableHead>Title</TableHead>
-            <TableHead className="text-right">Action</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {data.courses.map((course) => (
-            <TableRow key={course._id}>
-              <TableCell className="font-medium">{course?.coursePrice || "NA"}</TableCell>
-              <TableCell> <Badge>{course.isPublished ? "Published" : "Draft"}</Badge> </TableCell>
-              <TableCell>{course.courseTitle}</TableCell>
-              <TableCell className="text-right">
-                <Button size='sm' variant='ghost' onClick={() => navigate(`${course._id}`)}><Edit /></Button>
-              </TableCell>
-            </TableRow>
-          ))}
-        </TableBody>
-      </Table>
-    </div>
+    <Card className="p-4 m-5 shadow-md dark:bg-gray-900 bg-white">
+      <CardHeader className="flex flex-row items-center justify-between">
+        <CardTitle className="text-lg font-semibold">Your Courses</CardTitle>
+        <Button onClick={() => navigate(`create`)} className="flex items-center gap-2">
+          <PlusCircle className="w-4 h-4" /> Create New Course
+        </Button>
+      </CardHeader>
+
+      <CardContent>
+        {courses.length === 0 ? (
+          <div className="text-center py-10 text-gray-500">
+            <p className="mb-2">You haven’t created any courses yet.</p>
+            <Button onClick={() => navigate("create")}>Create Your First Course</Button>
+          </div>
+        ) : (
+          <Table>
+            <TableCaption>A list of your recently created courses.</TableCaption>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Title</TableHead>
+                <TableHead>Price</TableHead>
+                <TableHead>Status</TableHead>
+                <TableHead className="text-right">Action</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {courses.map((course) => (
+                <TableRow
+                  key={course._id}
+                  className="hover:bg-gray-50 dark:hover:bg-gray-800 transition-all duration-200 cursor-pointer"
+                >
+                  <TableCell className="font-medium">{course.courseTitle}</TableCell>
+                  <TableCell>
+                    {course.coursePrice ? `₹${course.coursePrice.toLocaleString()}` : "Free"}
+                  </TableCell>
+                  <TableCell>
+                    <Badge
+                      className={`${course.isPublished
+                        ? "bg-green-600 hover:bg-green-700"
+                        : "bg-yellow-600 hover:bg-yellow-700"
+                        } text-white`}
+                    >
+                      {course.isPublished ? "Published" : "Draft"}
+                    </Badge>
+                  </TableCell>
+                  <TableCell className="text-right">
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      onClick={() => navigate(`${course._id}`)}
+                      title="Edit Course"
+                    >
+                      <Edit className="w-4 h-4" />
+                    </Button>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        )}
+      </CardContent>
+    </Card>
   );
 };
 
