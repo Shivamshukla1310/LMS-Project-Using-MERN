@@ -26,7 +26,7 @@ app.use(cookieParser());
 //   credentials: true
 // }));
 const allowedOrigins = [
-  process.env.FRONTEND_URL || "http://localhost:5173",
+  process.env.FRONTEND_URL || "http://localhost:5173", "https://learning-project-moodle-application.vercel.app/"
 ];
 
 app.use(cors({
