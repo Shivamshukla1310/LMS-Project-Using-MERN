@@ -54,13 +54,16 @@ export const courseApi = createApi({
       providesTags: ["Refetch_Creator_Course"],
     }),
     editCourse: builder.mutation({
-      query: ({ formData, courseId }) => ({
+      query: ({ courseId, formData }) => ({
         url: `/${courseId}`,
         method: "PUT",
         body: formData,
+        // ❗ VERY IMPORTANT: remove default headers for FormData
+        headers: {},
       }),
       invalidatesTags: ["Refetch_Creator_Course"],
     }),
+
     getCourseById: builder.query({
       query: (courseId) => ({
         url: `/${courseId}`,

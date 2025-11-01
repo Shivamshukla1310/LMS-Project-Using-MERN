@@ -18,90 +18,103 @@ import {
 import axios from "axios";
 import { Loader2 } from "lucide-react";
 import React, { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { toast } from "sonner";
 
 const MEDIA_API = "http://localhost:8080/api/v1/media";
 
 const LectureTab = () => {
   const [lectureTitle, setLectureTitle] = useState("");
-  const [uploadVideInfo, setUploadVideoInfo] = useState(null);
+  const [uploadVideoInfo, setUploadVideoInfo] = useState(null);
   const [isFree, setIsFree] = useState(false);
   const [mediaProgress, setMediaProgress] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
-  const [setBtnDisable] = useState(true);
+
   const params = useParams();
+  const navigate = useNavigate();
   const { courseId, lectureId } = params;
 
   const { data: lectureData } = useGetLectureByIdQuery(lectureId);
   const lecture = lectureData?.lecture;
 
-  useEffect(() => {
-    if (lecture) {
-      setLectureTitle(lecture.lectureTitle);
-      setIsFree(lecture.isPreviewFree);
-      setUploadVideoInfo(lecture.videoInfo);
-    }
-  }, [lecture]);
-
-  const [edtiLecture, { data, isLoading, error, isSuccess }] =
+  // RTK Query mutations
+  const [editLecture, { data, isLoading, error, isSuccess }] =
     useEditLectureMutation();
   const [
     removeLecture,
     { data: removeData, isLoading: removeLoading, isSuccess: removeSuccess },
   ] = useRemoveLectureMutation();
 
+  // Populate form on load
+  useEffect(() => {
+    if (lecture) {
+      setLectureTitle(lecture.lectureTitle || "");
+      setIsFree(lecture.isPreviewFree || false);
+      setUploadVideoInfo(lecture.videoInfo || null);
+    }
+  }, [lecture]);
+
+  // ✅ Handle video upload
   const fileChangeHandler = async (e) => {
     const file = e.target.files[0];
-    if (file) {
-      const formData = new FormData();
-      formData.append("file", file);
-      setMediaProgress(true);
-      try {
-        const res = await axios.post(`${MEDIA_API}/upload-video`, formData, {
-          onUploadProgress: ({ loaded, total }) => {
-            setUploadProgress(Math.round((loaded * 100) / total));
-          },
-        });
+    if (!file) return;
 
-        if (res.data.success) {
-          setUploadVideoInfo({
-            videoUrl: res.data.data.url,
-            publicId: res.data.data.public_id,
-          });
-          setBtnDisable(false);
-          toast.success(res.data.message);
-        }
-      } catch (error) {
-        toast.error("Video upload failed");
-      } finally {
-        setMediaProgress(false);
+    const formData = new FormData();
+    formData.append("file", file);
+    setMediaProgress(true);
+
+    try {
+      const res = await axios.post(`${MEDIA_API}/upload-video`, formData, {
+        onUploadProgress: ({ loaded, total }) =>
+          setUploadProgress(Math.round((loaded * 100) / total)),
+      });
+
+      // ✅ Adjust based on backend response shape
+      const videoData = res.data?.data;
+      if (videoData?.url) {
+        setUploadVideoInfo({
+          videoUrl: videoData.url,
+          publicId: videoData.public_id,
+        });
+        toast.success(res.data?.message || "Video uploaded successfully!");
+      } else {
+        toast.error("Unexpected response from server");
       }
+    } catch (error) {
+      toast.error("Video upload failed");
+    } finally {
+      setMediaProgress(false);
     }
   };
 
+  // ✅ Update lecture handler
   const editLectureHandler = async () => {
-    await edtiLecture({
-      lectureTitle,
-      videoInfo: uploadVideInfo,
-      isPreviewFree: isFree,
-      courseId,
-      lectureId,
-    });
+    try {
+      await editLecture({
+        lectureTitle,
+        videoInfo: uploadVideoInfo,
+        isPreviewFree: isFree,
+        courseId,
+        lectureId,
+      }).unwrap();
+
+      toast.success("Lecture updated successfully!");
+      navigate(`/admin/course/${courseId}/lectures`);
+    } catch (err) {
+      toast.error(err?.data?.message || "Failed to update lecture");
+    }
   };
 
+  // ✅ Remove lecture handler
   const removeLectureHandler = async () => {
-    await removeLecture(lectureId);
+    try {
+      await removeLecture(lectureId).unwrap();
+      toast.success("Lecture removed successfully");
+      navigate(`/admin/course/${courseId}/lectures`);
+    } catch (err) {
+      toast.error(err?.data?.message || "Failed to remove lecture");
+    }
   };
-
-  useEffect(() => {
-    if (isSuccess) toast.success(data.message);
-    if (error) toast.error(error.data.message);
-  }, [isSuccess, error]);
-
-  useEffect(() => {
-    if (removeSuccess) toast.success(removeData.message);
-  }, [removeSuccess]);
 
   return (
     <Card className="shadow-md border border-gray-200 rounded-2xl transition-all duration-300 hover:shadow-lg">
@@ -155,9 +168,9 @@ const LectureTab = () => {
             onChange={fileChangeHandler}
             className="cursor-pointer w-fit border border-gray-300 rounded-md bg-gray-50 hover:bg-gray-100 transition"
           />
-          {uploadVideInfo?.videoUrl && (
+          {uploadVideoInfo?.videoUrl && (
             <video
-              src={uploadVideInfo.videoUrl}
+              src={uploadVideoInfo.videoUrl}
               controls
               className="rounded-lg border mt-2 w-full max-h-64 shadow-sm"
             />

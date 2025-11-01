@@ -51,69 +51,81 @@ const CourseTab = () => {
     useEditCourseMutation();
   const [publishCourse] = usePublishCourseMutation();
 
-  // Populate input state with fetched course
+  // ✅ Populate state when course data is fetched
   useEffect(() => {
     if (courseByIdData?.course) {
       const course = courseByIdData.course;
       setInput({
-        courseTitle: course.courseTitle,
-        subTitle: course.subTitle,
-        description: course.description,
-        category: course.category,
-        courseLevel: course.courseLevel,
-        coursePrice: course.coursePrice,
+        courseTitle: course.courseTitle || "",
+        subTitle: course.subTitle || "",
+        description: course.description || "",
+        category: course.category || "",
+        courseLevel: course.courseLevel || "",
+        coursePrice: course.coursePrice || "",
         courseThumbnail: "",
       });
+      if (course.thumbnail) {
+        setPreviewThumbnail(course.thumbnail);
+      }
     }
   }, [courseByIdData]);
 
   const changeEventHandler = (e) => {
     const { name, value } = e.target;
-    setInput({ ...input, [name]: value });
+    setInput((prev) => ({ ...prev, [name]: value }));
   };
 
-  const selectCategory = (value) => setInput({ ...input, category: value });
-  const selectCourseLevel = (value) => setInput({ ...input, courseLevel: value });
+  const selectCategory = (value) =>
+    setInput((prev) => ({ ...prev, category: value }));
+  const selectCourseLevel = (value) =>
+    setInput((prev) => ({ ...prev, courseLevel: value }));
 
   const selectThumbnail = (e) => {
     const file = e.target.files?.[0];
     if (file) {
-      setInput({ ...input, courseThumbnail: file });
+      setInput((prev) => ({ ...prev, courseThumbnail: file }));
       const reader = new FileReader();
       reader.onloadend = () => setPreviewThumbnail(reader.result);
       reader.readAsDataURL(file);
     }
   };
 
+  // ✅ Save changes handler
   const updateCourseHandler = async () => {
-    const formData = new FormData();
-    formData.append("courseTitle", input.courseTitle);
-    formData.append("subTitle", input.subTitle);
-    formData.append("description", input.description);
-    formData.append("category", input.category);
-    formData.append("courseLevel", input.courseLevel);
-    formData.append("coursePrice", input.coursePrice);
-    if (input.courseThumbnail) {
-      formData.append("courseThumbnail", input.courseThumbnail);
-    }
+    try {
+      const formData = new FormData();
+      Object.entries(input).forEach(([key, value]) => {
+        if (value !== undefined && value !== null) formData.append(key, value);
+      });
 
-    await editCourse({ formData, courseId });
+      // await editCourse({ id: courseId, body: formData }).unwrap();
+      await editCourse({ courseId, formData }).unwrap();
+
+      toast.success("Course updated successfully!");
+      refetch();
+    } catch (err) {
+      console.error("Update failed:", err);
+      toast.error(err?.data?.message || "Failed to update course");
+    }
   };
 
+
+  // ✅ Publish / Unpublish course
   const publishStatusHandler = async (action) => {
     try {
-      const response = await publishCourse({ courseId, query: action });
-      if (response.data) {
-        refetch();
-        toast.success(response.data.message);
-      }
+      const response = await publishCourse({ courseId, query: action }).unwrap();
+      toast.success(response.message);
+      refetch();
     } catch {
       toast.error("Failed to change publish status");
     }
   };
 
   useEffect(() => {
-    if (isSuccess) toast.success(data?.message || "Course updated successfully!");
+    if (isSuccess) {
+      toast.success(data?.message || "Course updated successfully!");
+      refetch();
+    }
     if (error) toast.error(error?.data?.message || "Failed to update course");
   }, [isSuccess, error, data]);
 
@@ -174,7 +186,7 @@ const CourseTab = () => {
           {/* Description Section */}
           <div className="w-full">
             <Label>Description</Label>
-            <div className=" mt-2 border border-gray-700 rounded-md overflow-hidden">
+            <div className="mt-2 border border-gray-700 rounded-md overflow-hidden">
               <RichTextEditor input={input} setInput={setInput} />
             </div>
           </div>
@@ -183,7 +195,7 @@ const CourseTab = () => {
           <div className="flex flex-wrap gap-5 items-center mt-6 ">
             <div>
               <Label className="mb-2">Category</Label>
-              <Select defaultValue={input.category} onValueChange={selectCategory}>
+              <Select value={input.category} onValueChange={selectCategory}>
                 <SelectTrigger className="w-[190px]">
                   <SelectValue placeholder="Select a category" />
                 </SelectTrigger>
@@ -213,7 +225,10 @@ const CourseTab = () => {
 
             <div>
               <Label className="mb-2">Course Level</Label>
-              <Select defaultValue={input.courseLevel} onValueChange={selectCourseLevel}>
+              <Select
+                value={input.courseLevel}
+                onValueChange={selectCourseLevel}
+              >
                 <SelectTrigger className="w-[180px]">
                   <SelectValue placeholder="Select a level" />
                 </SelectTrigger>
@@ -261,13 +276,15 @@ const CourseTab = () => {
           </div>
 
           <div className="flex flex-wrap gap-4 mt-4">
-            <Button
-              variant="outline"
-              onClick={() => navigate("/admin/course")}
-            >
+            <Button variant="outline" onClick={() => navigate("/admin/course")}>
               Cancel
             </Button>
-            <Button disabled={isLoading} className="flex items-center gap-2">
+            <Button
+              type="button"
+              disabled={isLoading}
+              onClick={updateCourseHandler}
+              className="flex items-center gap-2"
+            >
               {isLoading ? (
                 <>
                   <Loader2 className="animate-spin h-4 w-4" />
@@ -280,7 +297,7 @@ const CourseTab = () => {
           </div>
         </div>
       </CardContent>
-    </Card >
+    </Card>
   );
 };
 
