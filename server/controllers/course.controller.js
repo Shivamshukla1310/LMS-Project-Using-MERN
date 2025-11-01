@@ -1,4 +1,4 @@
-import Course from "../models/course.model.js";
+import Course from "../Models/course.model.js";
 import Lecture from "../Models/lecture.model.js";
 import { deleteMediaFromCloudinary, deleteVideoFromCloudinary, uploadMedia } from "../utils/cloudinary.js";
 

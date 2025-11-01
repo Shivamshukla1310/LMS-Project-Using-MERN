@@ -1,6 +1,6 @@
 // import Stripe from "stripe"; // ❌ Disabled Stripe for now
-import Course from "../models/course.model.js";
-import CoursePurchase from "../models/coursePurchase.model.js";
+import Course from "../Models/course.model.js";
+import CoursePurchase from "../Models/coursePurchase.model.js";
 import Lecture from "../Models/lecture.model.js";
 import User from "../Models/user.model.js";
 import dotenv from "dotenv";

@@ -1,5 +1,5 @@
-import CourseProgress from "../models/courseProgress.model.js";
-import Course from "../models/course.model.js";
+import CourseProgress from "../Models/courseProgress.model.js";
+import Course from "../Models/course.model.js";
 
 export const getCourseProgress = async (req, res) => {
   try {
